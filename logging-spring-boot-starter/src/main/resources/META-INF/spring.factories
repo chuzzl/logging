@@ -1,0 +1,9 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+  com.chuzzl.springboot.logging.spring.LogbackEnvironmentPostProcessor
+
+
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.chuzzl.springboot.logging.web.webflux.WebfluxLoggingAutoConfiguration,\
+  com.chuzzl.springboot.logging.web.webclient.WebClientLoggingAutoConfiguration,\
+  com.chuzzl.springboot.logging.web.resttemplate.RestTemplateLoggingAutoConfiguration,\
+  com.chuzzl.springboot.logging.web.servlet.ServletLoggingAutoConfiguration
