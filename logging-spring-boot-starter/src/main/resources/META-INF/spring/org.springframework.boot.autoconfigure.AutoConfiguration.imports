@@ -1,0 +1,4 @@
+com.chuzzl.springboot.logging.web.webflux.WebfluxLoggingAutoConfiguration
+com.chuzzl.springboot.logging.web.webclient.WebClientLoggingAutoConfiguration
+com.chuzzl.springboot.logging.web.resttemplate.RestTemplateLoggingAutoConfiguration
+com.chuzzl.springboot.logging.web.servlet.ServletLoggingAutoConfiguration

@@ -1,7 +1,7 @@
 package com.chuzzl.springboot.logging.web.servlet;
 
-import brave.Span;
-import brave.Tracer;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,19 +15,19 @@ import com.chuzzl.springboot.logging.api.MessageFormatter;
 import com.chuzzl.springboot.logging.api.OneLineFormatter;
 import com.chuzzl.springboot.logging.web.HttpMessage;
 
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ReadListener;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.AsyncEvent;
+import jakarta.servlet.AsyncListener;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,7 +72,11 @@ public class LoggingFilter implements Filter {
   @Override
   public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
     throws IOException, ServletException {
-    ContentCachingRequestWrapper cachedRequest = new ContentCachingRequestWrapper((HttpServletRequest) servletRequest);
+    if (!log.isInfoEnabled() || disabledLoggingRequestsFilter.match((HttpServletRequest) servletRequest)) {
+      filterChain.doFilter(servletRequest, servletResponse);
+      return;
+    }
+    ContentCachingRequestWrapper cachedRequest = new ContentCachingRequestWrapper((HttpServletRequest) servletRequest, Integer.MAX_VALUE);
     ContentCachingResponseWrapper cachedResponse =
       new ContentCachingResponseWrapper((HttpServletResponse) servletResponse);
 
@@ -135,36 +139,44 @@ public class LoggingFilter implements Filter {
           @Override
           public void onComplete(AsyncEvent asyncEvent) throws IOException {
             if (finalSpan != null) {
-              try (Tracer.SpanInScope sis = tracer.withSpanInScope(finalSpan)) {
+              try (Tracer.SpanInScope sis = tracer.withSpan(finalSpan)) {
                 maybeLogResponse(cachedResponse, logExchange);
               }
+            } else {
+              maybeLogResponse(cachedResponse, logExchange);
             }
           }
 
           @Override
           public void onTimeout(AsyncEvent asyncEvent) throws IOException {
             if (finalSpan != null) {
-              try (Tracer.SpanInScope sis = tracer.withSpanInScope(finalSpan)) {
+              try (Tracer.SpanInScope sis = tracer.withSpan(finalSpan)) {
                 maybeLogResponse(cachedResponse, logExchange);
               }
+            } else {
+              maybeLogResponse(cachedResponse, logExchange);
             }
           }
 
           @Override
           public void onError(AsyncEvent asyncEvent) throws IOException {
             if (finalSpan != null) {
-              try (Tracer.SpanInScope sis = tracer.withSpanInScope(finalSpan)) {
+              try (Tracer.SpanInScope sis = tracer.withSpan(finalSpan)) {
                 maybeLogResponse(cachedResponse, logExchange);
               }
+            } else {
+              maybeLogResponse(cachedResponse, logExchange);
             }
           }
 
           @Override
           public void onStartAsync(AsyncEvent asyncEvent) throws IOException {
             if (finalSpan != null) {
-              try (Tracer.SpanInScope sis = tracer.withSpanInScope(finalSpan)) {
+              try (Tracer.SpanInScope sis = tracer.withSpan(finalSpan)) {
                 maybeLogResponse(cachedResponse, logExchange);
               }
+            } else {
+              maybeLogResponse(cachedResponse, logExchange);
             }
           }
         });

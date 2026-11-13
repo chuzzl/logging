@@ -51,7 +51,7 @@ public class LoggingInterceptor implements ClientHttpRequestInterceptor {
       String.format("HTTP %s", response.getStatusCode().value()),
       null,
       response.getHeaders()
-        .entrySet()
+        .headerSet()
         .stream()
         .collect(
           toMap(
@@ -78,7 +78,7 @@ public class LoggingInterceptor implements ClientHttpRequestInterceptor {
       ),
       null,
       request.getHeaders()
-        .entrySet()
+        .headerSet()
         .stream()
         .collect(
           toMap(

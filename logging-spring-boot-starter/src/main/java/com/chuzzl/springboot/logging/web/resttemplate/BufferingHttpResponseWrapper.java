@@ -1,7 +1,7 @@
 package com.chuzzl.springboot.logging.web.resttemplate;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.StreamUtils;
 
@@ -19,14 +19,10 @@ public class BufferingHttpResponseWrapper implements ClientHttpResponse {
 
 
   @Override
-  public HttpStatus getStatusCode() throws IOException {
+  public HttpStatusCode getStatusCode() throws IOException {
     return delegate.getStatusCode();
   }
 
-  @Override
-  public int getRawStatusCode() throws IOException {
-    return delegate.getRawStatusCode();
-  }
 
   @Override
   public String getStatusText() throws IOException {

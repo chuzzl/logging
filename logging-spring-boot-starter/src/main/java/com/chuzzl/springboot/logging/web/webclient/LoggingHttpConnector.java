@@ -1,13 +1,12 @@
 package com.chuzzl.springboot.logging.web.webclient;
 
 import com.chuzzl.springboot.logging.web.HttpMessage;
-import io.netty.buffer.ByteBufAllocator;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ClientHttpRequest;
@@ -61,7 +60,7 @@ public class LoggingHttpConnector implements ClientHttpConnector {
     return body
       .collect(
         () -> {
-          NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+          DefaultDataBufferFactory nettyDataBufferFactory = new DefaultDataBufferFactory();
           return nettyDataBufferFactory.allocateBuffer();
         },
         (target, source) -> {
@@ -99,7 +98,7 @@ public class LoggingHttpConnector implements ClientHttpConnector {
       ),
       null,
       clientRequest.getHeaders()
-        .entrySet()
+        .headerSet()
         .stream()
         .collect(
           toMap(
@@ -123,7 +122,7 @@ public class LoggingHttpConnector implements ClientHttpConnector {
       String.format("HTTP %s", clientHttpResponse.getStatusCode().value()),
       null,
       clientHttpResponse.getHeaders()
-        .entrySet()
+        .headerSet()
         .stream()
         .collect(
           toMap(

@@ -2,8 +2,10 @@ package com.chuzzl.springboot.logging.web.webclient;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.http.client.reactive.ClientHttpConnector;
+import org.springframework.http.client.reactive.JdkClientHttpConnector;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -11,7 +13,7 @@ import java.lang.reflect.Field;
 
 public class WebClientPostProcessor implements BeanPostProcessor {
   @Autowired
-  LoggingConnectorFactory factory;
+  ObjectProvider<LoggingConnectorFactory> factory;
 
   @Override
   public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -22,7 +24,7 @@ public class WebClientPostProcessor implements BeanPostProcessor {
       connectorField.setAccessible(true);
       ClientHttpConnector connector = (ClientHttpConnector) ReflectionUtils.getField(connectorField, builder);
 
-      return client.mutate().clientConnector(factory.decorate(connector)).build();
+      return client.mutate().clientConnector(factory.getObject().decorate(connector != null ? connector : new JdkClientHttpConnector())).build();
     }
     return bean;
   }

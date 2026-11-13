@@ -1,16 +1,15 @@
 package com.chuzzl.springboot.logging.web.webflux;
 
-import io.netty.buffer.ByteBufAllocator;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cloud.sleuth.instrument.web.TraceWebFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -45,7 +44,7 @@ public class LoggingWebFilter implements WebFilter, Ordered {
 
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-    return Mono.subscriberContext().flatMap(context -> {
+    return Mono.defer(() -> {
       Mono<ServerWebExchange> targetExchange;
       if (!disabledLoggingRequestsFilter.match(exchange.getRequest())) {
         ServerHttpRequest originalRequest = exchange.getRequest();
@@ -72,7 +71,7 @@ public class LoggingWebFilter implements WebFilter, Ordered {
 
   @Override
   public int getOrder() {
-    return TraceWebFilter.ORDER + 1;
+    return Ordered.HIGHEST_PRECEDENCE + 10;
   }
 
   private void logInboundRequest(ServerHttpRequest request, DataBuffer data) {
@@ -85,12 +84,12 @@ public class LoggingWebFilter implements WebFilter, Ordered {
       Message.Type.INBOUND,
       String.format(
         "%s %s",
-        Optional.ofNullable(request.getMethod()).map(Enum::name).orElse("UNDEFINED"),
+        Optional.ofNullable(request.getMethod()).map(HttpMethod::name).orElse("UNDEFINED"),
         request.getPath().pathWithinApplication()
       ),
       null,
       request.getHeaders()
-        .entrySet()
+        .headerSet()
         .stream()
         .collect(
           toMap(
@@ -114,7 +113,7 @@ public class LoggingWebFilter implements WebFilter, Ordered {
       String.format("HTTP %s", serverHttpResponse.getStatusCode().value()),
       null,
       serverHttpResponse.getHeaders()
-        .entrySet()
+        .headerSet()
         .stream()
         .collect(
           toMap(
@@ -131,7 +130,7 @@ public class LoggingWebFilter implements WebFilter, Ordered {
     return body
       .collect(
         () -> {
-          NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+          DefaultDataBufferFactory nettyDataBufferFactory = new DefaultDataBufferFactory();
           return nettyDataBufferFactory.allocateBuffer();
         },
         (target, source) -> {
