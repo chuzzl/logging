@@ -2,13 +2,11 @@ package com.chuzzl.springboot.logging.web.webflux;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.cloud.sleuth.instrument.web.TraceWebAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.WebFilter;
 import com.chuzzl.springboot.logging.api.MessageFormatter;
@@ -20,9 +18,8 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 
-@Configuration(proxyBeanMethods = false)
+@AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-@AutoConfigureAfter(TraceWebAutoConfiguration.class)
 public class WebfluxLoggingAutoConfiguration {
   @Bean
   WebFilter loggingWebFilter() {

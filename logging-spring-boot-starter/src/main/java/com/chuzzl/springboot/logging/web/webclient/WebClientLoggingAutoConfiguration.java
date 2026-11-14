@@ -5,19 +5,19 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.web.reactive.function.client.WebClient;
 import com.chuzzl.springboot.logging.api.MessageFormatter;
 
 import java.util.Arrays;
 import java.util.Optional;
 
-@Configuration
+@AutoConfiguration
 @ConditionalOnClass(WebClient.class)
 public class WebClientLoggingAutoConfiguration {
 
   @Bean
-  WebClientPostProcessor webClientPostProcessor() {
+  static WebClientPostProcessor webClientPostProcessor() {
     return new WebClientPostProcessor();
   }
 
